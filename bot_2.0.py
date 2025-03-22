@@ -80,5 +80,12 @@ async def _bot(ctx):
     """Is the bot cool?"""
     await ctx.send('Yes, the bot is cool.')
 
+#////////////////////////////////////////
+
+@bot.command()
+async def ping(ctx):
+    """Responde con la latencia del bot."""
+    await ctx.send(f'Pong! {round(bot.latency * 1000)} ms')
+
 
 bot.run('TOKEN')
