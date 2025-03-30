@@ -4,6 +4,8 @@ import discord
 from discord.ext import commands
 from Generador import *
 import random
+import os
+import requests
 
 description = '''An example bot to showcase the discord.ext.commands extension
 module.
@@ -80,12 +82,65 @@ async def _bot(ctx):
     """Is the bot cool?"""
     await ctx.send('Yes, the bot is cool.')
 
-#////////////////////////////////////////
+# ////////////////////////////////////////   
 
 @bot.command()
 async def ping(ctx):
     """Responde con la latencia del bot."""
     await ctx.send(f'Pong! {round(bot.latency * 1000)} ms')
+
+# ///////////////////////////////////////
+
+@bot.command()
+async def mem(ctx):
+    meme = random.choice(os.listdir("memes"))
+    with open(f'memes/{meme}', 'rb') as f:
+        # ¡Vamos a almacenar el archivo de la biblioteca Discord convertido en esta variable!
+        picture = discord.File(f)
+    # A continuación, podemos enviar este archivo como parámetro.
+    await ctx.send(file=picture)
+
+def get_duck_image_url():    
+    url = 'https://random-d.uk/api/random'
+    res = requests.get(url)
+    data = res.json()
+    return data['url']
+
+
+@bot.command('duck')
+async def duck(ctx):
+    '''Una vez que llamamos al comando duck, 
+    el programa llama a la función get_duck_image_url'''
+    image_url = get_duck_image_url()
+    await ctx.send(image_url)
+
+# Tipos de memes
+
+@bot.command()
+async def mem_categoria(ctx, categoria: str):
+    memes = {
+        "anime": [
+            {"url": "https://i.pinimg.com/736x/5f/ce/c9/5fcec9a35213920b724f2a04676e3204.jpg", "rareza": 0.4},    
+            {"url": "https://images7.memedroid.com/images/UPLOADED246/64d4a8a6d3263.jpeg", "rareza": 0.6}   
+        ],
+        "tecnologia": [
+            {"url": "https://www.boredpanda.es/blog/wp-content/uploads/2022/03/20-6228a4eb3d3ec_1u9oohepwsi81__700-622b145752c46__700.jpg", "rareza": 0.3},
+            {"url": "https://www.boredpanda.es/blog/wp-content/uploads/2022/03/03-6228a2ac81c49_hwurhp7crzf81-png__700-622b13a1722c6__700.jpg", "rareza": 0.5}
+        ]
+    }
+
+    if categoria not in memes:
+        await ctx.send("Categoría no encontrada. Categorías disponibles: " + ", ".join(memes.keys()))
+        return
+
+    lista_memes = memes[categoria]
+    pesos = [(1 - meme["rareza"]) for meme in lista_memes]
+    meme_seleccionado = random.choices(lista_memes, weights=pesos, k=1)[0]
+    meme_url = meme_seleccionado["url"]
+
+    embed = discord.Embed(title=f"Meme de {categoria}")
+    embed.set_image(url=meme_url)
+    await ctx.send(embed=embed)
 
 
 bot.run('TOKEN')
