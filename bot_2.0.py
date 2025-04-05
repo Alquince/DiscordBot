@@ -6,6 +6,7 @@ from Generador import *
 import random
 import os
 import requests
+from bs4 import BeautifulSoup
 
 description = '''An example bot to showcase the discord.ext.commands extension
 module.
@@ -113,6 +114,41 @@ async def duck(ctx):
     el programa llama a la función get_duck_image_url'''
     image_url = get_duck_image_url()
     await ctx.send(image_url)
+
+
+# //////////// Medio Ambiente ///////////////
+
+@bot.command()
+async def datos(ctx):
+    lista = ["Cada minuto se venden un millón de botellas de plástico en todo el mundo. ",
+             "En 2021, la contaminación atmosférica causó 8,1 millones de muertes en todo el mundo, convirtiéndose en el segundo factor de riesgo de muerte."
+             "La contaminación del aire y del aire doméstico se asocian a millones de muertes prematuras cada año."]
+    await ctx.send("Sabias que: ")
+    await ctx.send(random.choice(lista))
+
+
+@bot.command()
+async def noticia(ctx, *, tema: str = "medio ambiente"):
+    import requests
+    from bs4 import BeautifulSoup
+
+    headers = {"User-Agent": "Mozilla/5.0"}
+    url = f"https://www.bing.com/news/search?q={tema.replace(' ', '+')}&cc=co"
+
+    try:
+        response = requests.get(url, headers=headers)
+        soup = BeautifulSoup(response.text, "html.parser")
+
+        noticia = soup.find("a", {"class": "title"})
+        if noticia:
+            titulo = noticia.get_text(strip=True)
+            enlace = noticia["href"]
+            await ctx.send(f"📰 **{titulo}**\n🔗 {enlace}")
+        else:
+            await ctx.send("No se encontraron noticias en Bing sobre ese tema.")
+    except Exception as e:
+        await ctx.send(f"Ocurrió un error: {e}")
+
 
 # Tipos de memes
 
